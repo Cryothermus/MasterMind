@@ -5,6 +5,36 @@ namespace MasterMind
 {
     class Program
     {
+        static void WriteColor(ConsoleColor color, string text)
+        {
+            Console.ForegroundColor = color;
+            Console.WriteLine(text);
+            Console.ResetColor();
+        }
+        
+        static int takeRangeInput(string message, int min, int max)
+        {
+            int result = min -  1;
+            while (result < min || result > max)
+            {
+                Console.WriteLine("");
+                Console.WriteLine(message);
+                try
+                {
+                    result = Int32.Parse(Console.ReadLine());
+                    if (result < min || result > max)
+                    {
+                        Console.WriteLine("Integer does not fall within range. Please try again.");
+                    }
+                }
+                catch (Exception)
+                {
+                    WriteColor(ConsoleColor.Red, "ERROR: Cannot read integer from input.");
+                }
+               
+            }
+            return result;
+        }
 
         class Combo
         {
@@ -51,7 +81,7 @@ namespace MasterMind
                 // checks if the length is correct
                 if (_guess.Length != correctCombo.Length)
                 {
-                    Console.WriteLine($"Invalid guess length: must have precisely {digits} values!");
+                    if (_guess.Length != 1) Console.WriteLine($"Invalid guess length: must have precisely {digits} values!");
                     hasError = true;
                     return false;
                 }
@@ -101,78 +131,21 @@ namespace MasterMind
         }
         static void Main(string[] args)
         {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("Welcome to Mastermind!");
-            Console.ResetColor();
+            WriteColor(ConsoleColor.Yellow, "Welcome to Mastermind!");
 
             int numDigits = 0;
             int numRange = 0;
             int numTries = 0;
 
             // inputs the number of digits in the answer
-            while (numDigits < 1 || numDigits > 10)
-            {
-                Console.WriteLine("");
-                Console.WriteLine("Please specify the number of digits (1-10):");
-                try
-                {
-                    numDigits = Int32.Parse(Console.ReadLine());
-                }
-                catch (Exception)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("ERROR: Cannot read integer from input");
-                    Console.ResetColor();
-                }
-                if (numDigits < 1 || numDigits > 10)
-                {
-                    Console.WriteLine("Integer does not fall within range. Please try again.");
-                }
-            }
-
+            numDigits = takeRangeInput("Please specify the number of digits (1-10)", 1, 10);
+           
             // Inputs the range of each digit in the answer
-            while (numRange < 1 || numRange > 10)
-            {
-                Console.WriteLine("");
-                Console.WriteLine("Please specify the range of digits from 0 (0-10):");
-                try
-                {
-                    numRange = Int32.Parse(Console.ReadLine());
-                }
-                catch (Exception)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("ERROR: Cannot read integer from input");
-                    Console.ResetColor();
-                };
-
-                if (numRange < 1 || numRange > 10)
-                {
-                    Console.WriteLine("Integer does not fall within range. Please try again.");
-                }
-            }
-
+            numRange = takeRangeInput("Please specify the range of the digits from 0 (0-9)", 1, 9);
+           
             //inputs the number of tries
-            while (numTries < 1)
-            {
-                Console.WriteLine("");
-                Console.WriteLine("Please specify the number of tries:");
-                try
-                {
-                    numTries = Int32.Parse(Console.ReadLine());
-                }
-                catch (Exception)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("ERROR: Cannot read integer from input");
-                    Console.ResetColor();
-                }
-                if (numTries < 1)
-                {
-                    Console.WriteLine("Integer must be greater than zero.");
-                }
-            }
-
+            numTries = takeRangeInput("Please specify the number of tries: ", 1, 999);
+            
             // generates the combination to be guessed
             Combo gameCombo = new Combo(numDigits, numRange, numTries);
             // sets up some crucial "main game" variables
@@ -184,15 +157,22 @@ namespace MasterMind
                 Console.WriteLine("");
                 Console.WriteLine($"Tries left: {gameCombo.tries - i}");
                 Console.WriteLine($"Please enter {gameCombo.digits} space-seperated values (0-{gameCombo.range}): ");
-                guessedCombo = Array.ConvertAll(Console.ReadLine().Split(" "), s => int.Parse(s));
+                try 
+                {
+                    guessedCombo = Array.ConvertAll(Console.ReadLine().Split(" "), s => int.Parse(s));
+                }
+                catch (Exception)
+                {
+                    WriteColor(ConsoleColor.Red, "ERROR: input has caused an exception and has been discarded.");
+                    gameCombo.hasError = true;
+                }
+               
 
                 isWon = gameCombo.CheckGuess(guessedCombo);
 
                 if (isWon)
                 {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("All digits match correctly- YOU WIN!");
-                    Console.ResetColor();
+                    WriteColor(ConsoleColor.Green, "All digits match correctly- YOU WIN!");
                 }
 
                 else
