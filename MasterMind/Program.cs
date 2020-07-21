@@ -5,14 +5,14 @@ namespace MasterMind
 {
     class Program
     {
-        static void WriteColor(ConsoleColor color, string text)
+        static void WriteColor(ConsoleColor color, string text) //prints a line in the given color
         {
             Console.ForegroundColor = color;
             Console.WriteLine(text);
             Console.ResetColor();
         }
         
-        static int takeRangeInput(string message, int min, int max)
+        static int takeRangeInput(string message, int min, int max) // takes input within a range
         {
             int result = min -  1;
             while (result < min || result > max)
@@ -38,9 +38,9 @@ namespace MasterMind
 
         class Combo
         {
-            public int digits { get; set; }
-            public int range { get; set; }
-            public int tries { get; set; }
+            public int digits { get;}
+            public int range { get; }
+            public int tries { get; }
             public int[] correctCombo { get; }
             public int numCorrect { get; set; }
             public int numMisplaced { get; set; }
@@ -48,18 +48,18 @@ namespace MasterMind
             public bool hasError { get; set; }
             public Combo(int _digits, int _range, int _tries)
             {
-                digits = _digits;
-                range = _range;
-                tries = _tries;
-                correctCombo = CreateCombo(digits, range);
-                numCorrect = 0;
-                numMisplaced = 0;
-                numWrong = 0;
-                hasError = false;
+                digits = _digits; //no. of digits in the correct combo
+                range = _range; // range of the digits
+                tries = _tries; //number of tries the player has
+                correctCombo = CreateCombo(digits, range); // the combo itself
+                numCorrect = 0; // digits completely correct in the guess
+                numMisplaced = 0; //digits that are correct, but misplaced in the guess
+                numWrong = 0; // digits completely wrong
+                hasError = false; //is true if the input causes an error
 
             }
 
-            private int[] CreateCombo(int digits, int range)
+            private int[] CreateCombo(int digits, int range) //generates the correct combo
             {
                 var random = new Random();
                 int[] result = new int[digits];
@@ -70,18 +70,18 @@ namespace MasterMind
                 return result;
             }
 
-            public string GetCorrectCombo()
+            public string GetCorrectCombo() // gets the correct combo as a string
             {
                 return String.Join(" ", correctCombo);
             }
-
-            public bool CheckGuess(int[] _guess)
+            
+            public bool CheckGuess(int[] _guess) //checks a guess against the correct combo
             {
                 hasError = false;
                 // checks if the length is correct
                 if (_guess.Length != correctCombo.Length)
                 {
-                    if (_guess.Length != 1) Console.WriteLine($"Invalid guess length: must have precisely {digits} values!");
+                    /*if (_guess.Length != 1)*/ Console.WriteLine($"Invalid guess length: must have precisely {digits} values!");
                     hasError = true;
                     return false;
                 }
@@ -131,6 +131,7 @@ namespace MasterMind
         }
         static void Main(string[] args)
         {
+            //intro + some crucial inputs
             WriteColor(ConsoleColor.Yellow, "Welcome to Mastermind!");
 
             int numDigits = 0;
@@ -150,16 +151,22 @@ namespace MasterMind
             Combo gameCombo = new Combo(numDigits, numRange, numTries);
             // sets up some crucial "main game" variables
             int[] guessedCombo = new int[numDigits];
+            //for (int i = 0; i < guessedCombo.Length; i++) guessedCombo[i] = -1;
             bool isWon = false;
 
+            //does the main game
             for (int i = 0; i < gameCombo.tries && !isWon; i++)
             {
                 Console.WriteLine("");
                 Console.WriteLine($"Tries left: {gameCombo.tries - i}");
                 Console.WriteLine($"Please enter {gameCombo.digits} space-seperated values (0-{gameCombo.range}): ");
+
+                //takes guess input
                 try 
                 {
                     guessedCombo = Array.ConvertAll(Console.ReadLine().Split(" "), s => int.Parse(s));
+                    //Console.WriteLine(guessedCombo[0]);
+                    isWon = gameCombo.CheckGuess(guessedCombo);
                 }
                 catch (Exception)
                 {
@@ -168,18 +175,26 @@ namespace MasterMind
                 }
                
 
-                isWon = gameCombo.CheckGuess(guessedCombo);
 
+                // win condition
                 if (isWon)
                 {
                     WriteColor(ConsoleColor.Green, "All digits match correctly- YOU WIN!");
                 }
 
+                // if an error occurs
+                else if (gameCombo.hasError)
+                {
+                    i--;
+                    //Console.WriteLine("Try refunded."); // debug
+                }
+
+                //if the guess is incorrect
                 else
                 {
                     Console.WriteLine($"You have {gameCombo.numCorrect} digits correct, {gameCombo.numMisplaced} misplaced, and {gameCombo.numWrong} wrong.");
-                    if (gameCombo.hasError) i--;
-                    if (i == gameCombo.tries - 1) Console.WriteLine($"GAME OVER! The correct combination is: {gameCombo.GetCorrectCombo()}");
+
+                    if (i == gameCombo.tries - 1) WriteColor( ConsoleColor.Yellow, $"GAME OVER! The correct combination is: {gameCombo.GetCorrectCombo()}");
                 }
 
 
